@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/RedisLabs/redisgraph-rb/tree/master.svg?style=svg)](https://circleci.com/gh/RedisLabs/redisgraph-rb/tree/master)
+
 # redisgraph-rb
 
 `redisgraph-rb` is a Ruby gem client for the RedisGraph module. It relies on `redis-rb` for Redis connection management and provides support for graph QUERY, EXPLAIN, and DELETE commands.

@@ -74,7 +74,6 @@ end
 def test_suite
   puts "Running RedisGraph tests..."
   connect_test
-  delete_graph # Clear the graph
 
   # Test basic functionalities
   validate_node_creation

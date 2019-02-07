@@ -1,6 +1,7 @@
 [![license](https://img.shields.io/github/license/RedisGraph/redisgraph-rb.svg)](https://github.com/RedisGraph/redisgraph-rb)
 [![CircleCI](https://circleci.com/gh/RedisGraph/redisgraph-rb/tree/master.svg?style=svg)](https://circleci.com/gh/RedisGraph/redisgraph-rb/tree/master)
 [![GitHub issues](https://img.shields.io/github/release/RedisGraph/redisgraph-rb.svg)](https://github.com/RedisGraph/redisgraph-rb/releases/latest)
+[![Codecov](https://codecov.io/gh/RedisGraph/redisgraph-rb/branch/master/graph/badge.svg)](https://codecov.io/gh/RedisGraph/redisgraph-rb)
 
 
 # redisgraph-rb

@@ -6,7 +6,8 @@ require 'simplecov'
 SimpleCov.start
 
 require 'codecov'
-SimpleCov.formatter = SimpleCov::Formatter::Codecov
+formatter = SimpleCov::Formatter::Codecov.new
+formatter.format(SimpleCov::ResultMerger.merged_result)
 
 # Helper functions
 # TODO it would be nice to have something like DisposableRedis

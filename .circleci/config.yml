@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       - image: circleci/ruby:2.4.1-node-browsers
-      
+
       - image: redislabs/redisgraph:edge
         port: 6379:6379
 
@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - checkout
-      
+
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "Gemfile" }}
@@ -31,7 +31,7 @@ jobs:
           paths:
             - ./vendor/bundle
           key: v1-dependencies-{{ checksum "Gemfile" }}
-        
+
       # run tests!
       - run:
           name: run tests

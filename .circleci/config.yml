@@ -5,18 +5,22 @@
 version: 2
 jobs:
   build:
-    machine:
-      image: circleci/classic:latest      
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+    docker:
+      - image: circleci/ruby:2.4.1-node-browsers
+      
+      - image: redislabs/redisgraph:edge
+        port: 6379:6379
 
     working_directory: ~/repo
 
     steps:
       - checkout
+      
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "Gemfile" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
       - run:
           name: install dependencies
@@ -26,11 +30,9 @@ jobs:
       - save_cache:
           paths:
             - ./vendor/bundle
-          key: v1-dependencies-{{ checksum "Gemfile.lock" }}
+          key: v1-dependencies-{{ checksum "Gemfile" }}
         
       # run tests!
       - run:
           name: run tests
-          command: |
-            docker run -d -p 6379:6379 -it --rm --name redisgraph redislabs/redisgraph:edge
-            bundle exec ruby test/test_suite.rb
+          command: bundle exec ruby test/test_suite.rb

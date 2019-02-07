@@ -2,6 +2,12 @@ require_relative '../lib/redisgraph.rb'
 require "test/unit"
 include Test::Unit::Assertions
 
+require 'simplecov'
+SimpleCov.start
+
+require 'codecov'
+SimpleCov.formatter = SimpleCov::Formatter::Codecov
+
 # Helper functions
 # TODO it would be nice to have something like DisposableRedis
 

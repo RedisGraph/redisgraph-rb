@@ -35,4 +35,4 @@ jobs:
       # run tests!
       - run:
           name: run tests
-          command: bundle exec ruby test/test_suite.rb
+          command: bundle exec rspec

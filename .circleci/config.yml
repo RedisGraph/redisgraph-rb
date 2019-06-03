@@ -8,7 +8,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.1-node-browsers
 
-      - image: redislabs/redisgraph:edge
+      - image: redislabs/redisgraph:1.2.2
         port: 6379:6379
 
     working_directory: ~/repo

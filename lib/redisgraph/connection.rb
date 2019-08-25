@@ -10,7 +10,8 @@ class RedisGraph
     redis_version = @connection.info["redis_version"]
     major_version = redis_version.split('.').first.to_i
     raise ServerError, "Redis 4.0 or greater required for RedisGraph support." unless major_version >= 4
-    resp = @connection.call("MODULE", "LIST")
-    raise ServerError, "RedisGraph module not loaded." unless resp.first && resp.first.include?("graph")
+    modules = @connection.call("MODULE", "LIST")
+    module_graph = modules.detect { |_name_key, name, _ver_key, _ver| name == 'graph' }
+    raise ServerError, "RedisGraph module not loaded." if module_graph.nil?
   end
 end

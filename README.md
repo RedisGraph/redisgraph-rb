@@ -56,7 +56,13 @@ RedisGraph connects to an active Redis server, defaulting to `host: localhost, p
 These parameters are described fully in the documentation for https://github.com/redis/redis-rb
 
 ## Running tests
-A simple test suite is provided, and can be run with:
-`ruby test/test_suite.rb`
+To ensure prerequisites are installed, run the following:
+`bundle install`
+
 These tests expect a Redis server with the Graph module loaded to be available at localhost:6379
 
+The currently compatible version of the RedisGraph module may be run as follows:
+`docker run -p 6379:6379 -it --rm redislabs/redisgraph:1.2.2`
+
+A simple test suite is provided, and can be run with:
+`rspec`

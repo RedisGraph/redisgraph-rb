@@ -17,7 +17,7 @@ describe RedisGraph do
 
   # Ensure that the graph "rubytest" does not exist
   after(:all) do
-    @r.delete
+    @r.delete if @r
   end
 
   # Test functions - each validates one or more EXPLAIN and QUERY calls
@@ -46,25 +46,24 @@ describe RedisGraph do
 
   context "edges" do
     it "should create edges properly" do
-      query_str = """CREATE (p:node {name: 'src1'})-[:edge]->(:node {name: 'dest1'}), (:node {name: 'src2'})-[:edge]->(q:node_type_2 {name: 'dest2'})"""
+      query_str = "CREATE (p:node {name: 'src1', color: 'cyan'})-[:edge]->(:node {name: 'dest1', color: 'magenta'})," \
+        " (:node {name: 'src2'})-[:edge]->(q:node_type_2 {name: 'dest2'})"
       plan = @r.explain(query_str)
       expect(plan).to include("Create")
       x = @r.query(query_str)
       expect(x.resultset).to be_nil
       expect(x.stats[:nodes_created]).to eq(4)
-      expect(x.stats[:properties_set]).to eq(4)
+      expect(x.stats[:properties_set]).to eq(6)
       expect(x.stats[:relationships_created]).to eq(2)
     end
 
     it "should traverse edges properly" do
       query_str = """MATCH (a)-[:edge]->(b:node) RETURN a, b"""
       plan = @r.explain(query_str)
-      expect(plan).to include("Traverse")
+      expect(plan.detect { |row| row.include?("Traverse") }).to_not be_nil
       x = @r.query(query_str)
-      expect(x.resultset).to be_instance_of(Array)
-      expect(x.columns.length).to eq(2)
-      expect(x.resultset.length).to eq(1)
-      expect(x.resultset[0]).to eq(["src1", "dest1"])
+      expect(x.columns).to eq(["a.name", "a.color", "b.name", "b.color"])
+      expect(x.resultset).to eq([["src1", "cyan", "dest1", "magenta"]])
     end
   end
 end

@@ -58,7 +58,6 @@ class QueryResult
     end
 
     # Any non-empty result set will have multiple rows (arrays)
-    return nil unless response[0].length > 1
 
     property_keys = @graph.property_keys
 
@@ -67,7 +66,7 @@ class QueryResult
     header = response[0].map { |_type, el| el }.to_a
 
     @columns = header.reduce([]) do |agg, it|
-      if it.include?('.')
+      if it.include?('.') || it.include?('(')
         agg << it
       else
         property_keys.each do |pkey|
@@ -84,10 +83,25 @@ class QueryResult
 
     # Second row is the actual data returned by the query
     data = response[1].map do |row|
-      src, dest = row
-      src_props = src[2].sort_by { |it| it[0] }.map { |props| props[2] }
-      dest_props = dest[2].sort_by { |it| it[0] }.map { |props| props[2] }
-      src_props + dest_props
+      if row.length == 1
+        row[0][1]
+      else
+        src, dest = row
+
+        src_props = if src.length == 3
+                      src[2].sort_by { |it| it[0] }.map { |props| props[2] }
+                    else
+                      [src[1]]
+                    end
+
+        dest_props = if dest.length == 3
+                       dest[2].sort_by { |it| it[0] }.map { |props| props[2] }
+                     else
+                       [dest[1]]
+                     end
+
+        src_props + dest_props
+      end
     end
 
     data

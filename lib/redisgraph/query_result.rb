@@ -84,7 +84,7 @@ class QueryResult
     # Second row is the actual data returned by the query
     data = response[1].map do |row|
       if row.length == 1
-        row[0][1]
+        [row[0][1]]
       else
         src, dest = row
 

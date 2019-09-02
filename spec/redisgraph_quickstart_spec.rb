@@ -2,7 +2,7 @@ require 'helper.rb'
 
 require_relative '../lib/redisgraph.rb'
 
-# based on queries extracted from 
+# based on queries extracted from
 describe RedisGraph do
   before(:all) do
     @r = RedisGraph.new('quickstart')
@@ -26,7 +26,7 @@ describe RedisGraph do
     expect(res.resultset).to be_nil
     stats = res.stats
     expect(stats).to include(:internal_execution_time)
-    stats.delete(:internal_execution_time)    
+    stats.delete(:internal_execution_time)
     expect(stats).to eq({
       labels_added:          2,
       nodes_created:         6,
@@ -38,7 +38,7 @@ describe RedisGraph do
   context 'quickstart' do
     it 'should query relations, with a predicate' do
       q = "MATCH (r:Rider)-[:rides]->(t:Team) WHERE t.name = 'Yamaha' RETURN r.name, t.name"
-      
+
       res = @r.query(q)
 
       expect(res.columns).to eq(["r.name", "t.name"])
@@ -48,7 +48,7 @@ describe RedisGraph do
     # not in the quickstart, but demonstrates multiple rows
     it 'should query relations, without a predicate' do
       q = "MATCH (r:Rider)-[:rides]->(t:Team) RETURN r.name, t.name"
-      
+
       res = @r.query(q)
 
       expect(res.columns).to eq(["r.name", "t.name"])
@@ -65,7 +65,7 @@ describe RedisGraph do
       res = @r.query(q)
 
       expect(res.columns).to eq(["count(r)"])
-      expect(res.resultset).to eq([1])
+      expect(res.resultset).to eq([[1]])
     end
   end
 end

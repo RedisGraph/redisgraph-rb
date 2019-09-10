@@ -5,7 +5,7 @@ require_relative '../lib/redisgraph.rb'
 # based on queries extracted from
 describe RedisGraph do
   before(:all) do
-    @r = RedisGraph.new('quickstart')
+    @r = RedisGraph.new("#{described_class}_test")
     create_graph
   rescue Redis::BaseError => e
     $stderr.puts(e)
@@ -47,7 +47,7 @@ describe RedisGraph do
 
     # not in the quickstart, but demonstrates multiple rows
     it 'should query relations, without a predicate' do
-      q = "MATCH (r:Rider)-[:rides]->(t:Team) RETURN r.name, t.name"
+      q = "MATCH (r:Rider)-[:rides]->(t:Team) RETURN r.name, t.name ORDER BY r.name"
 
       res = @r.query(q)
 

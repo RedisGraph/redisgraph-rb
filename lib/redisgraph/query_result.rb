@@ -5,13 +5,6 @@ class QueryResult
 
   def initialize(response, opts = {})
     # The response for any query is expected to be a nested array.
-    # If not compact (RedisGraph protocol v1)
-    # The resultset is an array w/ two elements:
-    # 0] Node/Edge key/value pairs as an array w/ two elements:
-    #  0] node/edge names
-    #  1..matches] node/edge values
-    # 1] Statistics as an array of strings
-    #
     # If compact (RedisGraph protocol v2)
     # The resultset is an array w/ three elements:
     # 0] Node/Edge key names w/ the ordinal position used in [1]
@@ -20,10 +13,9 @@ class QueryResult
     #  0] node/edge name id from [0]
     #  1..matches] node/edge values
     # 2] Statistics as an array of strings
-    #
+
     @compact = opts[:compact]
-    @query_type = opts[:query_type]
-    @graph = opts[:graph]
+    @metadata = opts[:metadata]
 
     @resultset = parse_resultset(response)
     @stats = parse_stats(response)
@@ -37,98 +29,89 @@ class QueryResult
   end
 
   def parse_resultset(response)
-    meth = @compact ? :parse_resultset_v2 : :parse_resultset_v1
-    send(meth, response)
-  end
-
-  def parse_resultset_v1(response)
-    # Any non-empty result set will have multiple rows (arrays)
-    return nil unless response[0].length > 1
-    # First row is return elements / properties
-    @columns = response[0].shift
-    # Subsequent rows are records
-    @resultset = response[0]
-  end
-
-  def parse_resultset_v2(response)
     # In the v2 protocol, CREATE does not contain an empty row preceding statistics
-    case @query_type
-    when :create, :delete
-      return
-    end
+    return unless response.length > 1
 
     # Any non-empty result set will have multiple rows (arrays)
 
-    property_keys = @graph.property_keys
 
     # First row is header describing the returned records, corresponding
     # precisely in order and naming to the RETURN clause of the query.
-    header = response[0].map { |_type, el| el }.to_a
+    header = response[0]
 
-    @columns = header.reduce([]) do |agg, it|
-      if it.include?('.') || it.include?('(')
-        agg << it
-      else
-        property_keys.each do |pkey|
-          agg << "#{it}.#{pkey}"
-        end
-      end
-      agg
-    end
-
-    # TODO: add handling for encountering an id for propertyKey that is out of
-    # the cached set. this currently works for the test cases and generally for
-    # A. a single client, on changing the schema the cache is invalidated.
-    # B. a graph that has the schema relatively static, so cache remains coherent
+    # columns discovered from data
+    @columns = parse_resultset_columns(response,header)
 
     # Second row is the actual data returned by the query
+    # note handling for encountering an id for propertyKey that is out of
+    # the cached set.
     data = response[1].map do |row|
-      if row.length == 1
-        [row[0][1]]
-      else
-        src, dest = row
+      i = -1
+      header.reduce([]) do |agg, (type, _it)|
+        i += 1
+        el = row[i]
 
-        src_props = if src.length == 3
-                      src[2].sort_by { |it| it[0] }.map { |props| props[2] }
-                    else
-                      [src[1]]
-                    end
+        case type
+        when 1 # scalar
+          agg << el[1]
+        when 2 # node
+          props = el[2]
+          props.sort_by { |prop| prop[0] }.each { |prop| agg << prop[2] }
+        when 3 # relation
+          props = el[4]
+          props.sort_by { |prop| prop[0] }.each { |prop| agg << prop[2] }
+        end
 
-        dest_props = if dest.length == 3
-                       dest[2].sort_by { |it| it[0] }.map { |props| props[2] }
-                     else
-                       [dest[1]]
-                     end
-
-        src_props + dest_props
+        agg
       end
     end
 
     data
   end
 
-  # Read metrics about internal query handling
-  def parse_stats(response)
-    meth = @compact ? :parse_stats_v2 : :parse_stats_v1
-    send(meth, response)
+  def parse_resultset_columns(response, header)
+    property_keys = @metadata.property_keys
+
+    row = response[1][0]
+    i = -1
+    header.reduce([]) do |agg, (type, it)|
+      i += 1
+      el = row[i]
+      case type
+      when 1 # scalar
+        agg << it
+      when 2 # node
+        props = el[2]
+        props.sort_by { |prop| prop[0] }.each do |prop|
+          if prop[0] >= property_keys.length
+            @metadata.invalidate
+            property_keys = @metadata.property_keys
+          end
+          agg << "#{it}.#{property_keys[prop[0]]}"
+        end
+      when 3 # relation
+        props = el[4]
+        props.sort_by { |prop| prop[0] }.each do |prop|
+          if prop[0] >= property_keys.length
+            @metadata.invalidate
+            property_keys = @metadata.property_keys
+          end
+          agg << "#{it}.#{property_keys[prop[0]]}"
+        end
+      end
+
+      agg
+    end
   end
 
-  def parse_stats_v2(response)
+  # Read metrics about internal query handling
+  def parse_stats(response)
     # In the v2 protocol, CREATE does not contain an empty row preceding statistics
-    stats_offset = case @query_type
-                when :create, :delete then 0
-                when :match then 2
-                end
+    stats_offset = response.length == 1 ? 0 : 2
 
     return nil unless response[stats_offset]
 
     parse_stats_row(response[stats_offset])
-  end
-
-  def parse_stats_v1(response)
-    return nil unless response[1]
-
-    parse_stats_row(response[1])
   end
 
   def parse_stats_row(response_row)
@@ -136,23 +119,23 @@ class QueryResult
 
     response_row.each do |stat|
       line = stat.split(': ')
-      val = line[1].split(' ')[0]
+      val = line[1].split(' ')[0].to_i
 
       case line[0]
       when /^Labels added/
-        stats[:labels_added] = val.to_i
+        stats[:labels_added] = val
       when /^Nodes created/
-        stats[:nodes_created] = val.to_i
+        stats[:nodes_created] = val
       when /^Nodes deleted/
-        stats[:nodes_deleted] = val.to_i
+        stats[:nodes_deleted] = val
       when /^Relationships deleted/
-        stats[:relationships_deleted] = val.to_i
+        stats[:relationships_deleted] = val
       when /^Properties set/
-        stats[:properties_set] = val.to_i
+        stats[:properties_set] = val
       when /^Relationships created/
-        stats[:relationships_created] = val.to_i
+        stats[:relationships_created] = val
       when /^Query internal execution time/
-        stats[:internal_execution_time] = val.to_f
+        stats[:internal_execution_time] = val
       end
     end
     stats

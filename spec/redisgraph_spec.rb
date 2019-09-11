@@ -48,7 +48,7 @@ describe RedisGraph do
 
   context "edges" do
     it "should create edges properly" do
-      q = "CREATE (p:node {name: 'src1', color: 'cyan'})-[:edge { weight: 7 }]->(:node {name: 'dest1', color: 'magenta'})," \
+      q = "CREATE (p:node {name: 'src1', color: 'cyan'})-[:edge { weight: 7.8 }]->(:node {name: 'dest1', color: 'magenta'})," \
         " (:node {name: 'src2'})-[:edge { weight: 12 }]->(q:node_type_2 {name: 'dest2'})"
       plan = @r.explain(q)
       expect(plan).to include("Create")
@@ -65,7 +65,7 @@ describe RedisGraph do
       expect(plan.detect { |row| row.include?("Traverse") }).to_not be_nil
       res = @r.query(q)
       expect(res.columns).to eq(["a.name", "b", "e"])
-      expect(res.resultset).to eq([["src1", [{"name"=>"dest1"}, {"color"=>"magenta"}], [{"weight"=>7}]]])
+      expect(res.resultset).to eq([["src1", [{"name"=>"dest1"}, {"color"=>"magenta"}], [{"weight"=>7.8}]]])
     end
   end
 end

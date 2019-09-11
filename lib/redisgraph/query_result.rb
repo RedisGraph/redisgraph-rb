@@ -50,7 +50,7 @@ class QueryResult
 
         case type
         when 1 # scalar
-          agg << el[1]
+          agg << map_scalar(el[0], el[1])
         when 2 # node
           props = el[2]
           agg << props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
@@ -66,6 +66,21 @@ class QueryResult
     data
   end
 
+  def map_scalar(type, val)
+    map_func = case type
+               when 2 # string
+                 :to_s
+               when 3 # integer
+                 :to_i
+               when 4 # boolean
+                 # no :to_b
+                 return val == "true"
+               when 5 # double
+                 :to_f
+               end
+    val.send(map_func)
+  end
+
   def map_prop(prop)
     # maximally a single @metadata.invalidate should occur
 
@@ -75,7 +90,7 @@ class QueryResult
       @metadata.invalidate
       property_keys = @metadata.property_keys
     end
-    { property_keys[prop_index] => prop[2] }
+    { property_keys[prop_index] => map_scalar(prop[1], prop[2]) }
   end
 
   # Read metrics about internal query handling

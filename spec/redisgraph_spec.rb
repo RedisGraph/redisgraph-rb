@@ -6,10 +6,12 @@ describe RedisGraph do
   # TODO it would be nice to have something like DisposableRedis
   # Connect to a Redis server on localhost:6379
   before(:all) do
-    @r = RedisGraph.new("#{described_class}_test")
-    create_graph
-  rescue Redis::BaseError => e
-    $stderr.puts(e)
+    begin
+      @r = RedisGraph.new("#{described_class}_test")
+      create_graph
+    rescue Redis::BaseError => e
+      $stderr.puts(e)
+    end
   end
 
   # Ensure that the graph "rubytest" does not exist
@@ -62,8 +64,8 @@ describe RedisGraph do
       plan = @r.explain(q)
       expect(plan.detect { |row| row.include?("Traverse") }).to_not be_nil
       res = @r.query(q)
-      expect(res.columns).to eq(["a.name", "b.name", "b.color", "e.weight"])
-      expect(res.resultset).to eq([["src1", "dest1", "magenta", 7]])
+      expect(res.columns).to eq(["a.name", "b", "e"])
+      expect(res.resultset).to eq([["src1", [{"name"=>"dest1"}, {"color"=>"magenta"}], [{"weight"=>7}]]])
     end
   end
 end

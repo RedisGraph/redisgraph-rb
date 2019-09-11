@@ -57,10 +57,8 @@ class RedisGraph
 
   # Execute a command and return its parsed result
   def query(command)
-    resp = @connection.call("GRAPH.QUERY", @graphname, command, \
-                            call_compact? ? '--compact' : '')
+    resp = @connection.call("GRAPH.QUERY", @graphname, command, '--compact')
     QueryResult.new(resp,
-                    compact:    call_compact?,
                     metadata:   @metadata)
   rescue Redis::CommandError => e
     raise QueryError, e
@@ -68,8 +66,7 @@ class RedisGraph
 
   # Return the execution plan for a given command
   def explain(command)
-    resp = @connection.call("GRAPH.EXPLAIN", @graphname, command)
-    resp = call_compact? ? resp : resp.split("\n")
+    @connection.call("GRAPH.EXPLAIN", @graphname, command)
   rescue Redis::CommandError => e
     raise ExplainError, e
   end

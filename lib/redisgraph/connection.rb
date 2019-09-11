@@ -3,6 +3,7 @@ class RedisGraph
     @connection = Redis.new(options)
     @module_version = module_version()
     raise ServerError, "RedisGraph module not loaded." if @module_version.nil?
+    raise ServerError, "RedisGraph module incompatible, expecting >= 1.99." if @module_version < 19900
   end
 
   # Ensure that the connected Redis server supports modules
@@ -14,9 +15,5 @@ class RedisGraph
     modules = @connection.call("MODULE", "LIST")
     module_graph = modules.detect { |_name_key, name, _ver_key, _ver| name == 'graph' }
     module_graph[3] if module_graph
-  end
-
-  def call_compact?
-    @module_version >= 19900
   end
 end

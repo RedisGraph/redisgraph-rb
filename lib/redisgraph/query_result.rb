@@ -14,7 +14,6 @@ class QueryResult
     #  1..matches] node/edge values
     # 2] Statistics as an array of strings
 
-    @compact = opts[:compact]
     @metadata = opts[:metadata]
 
     @resultset = parse_resultset(response)
@@ -38,9 +37,7 @@ class QueryResult
     # First row is header describing the returned records, corresponding
     # precisely in order and naming to the RETURN clause of the query.
     header = response[0]
-
-    # columns discovered from data
-    @columns = parse_resultset_columns(response,header)
+    @columns = header.map { |(_type, name)| name }
 
     # Second row is the actual data returned by the query
     # note handling for encountering an id for propertyKey that is out of
@@ -56,10 +53,10 @@ class QueryResult
           agg << el[1]
         when 2 # node
           props = el[2]
-          props.sort_by { |prop| prop[0] }.each { |prop| agg << prop[2] }
+          agg << props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
         when 3 # relation
           props = el[4]
-          props.sort_by { |prop| prop[0] }.each { |prop| agg << prop[2] }
+          agg << props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
         end
 
         agg
@@ -69,39 +66,16 @@ class QueryResult
     data
   end
 
-  def parse_resultset_columns(response, header)
+  def map_prop(prop)
+    # maximally a single @metadata.invalidate should occur
+
     property_keys = @metadata.property_keys
-
-    row = response[1][0]
-    i = -1
-    header.reduce([]) do |agg, (type, it)|
-      i += 1
-      el = row[i]
-      case type
-      when 1 # scalar
-        agg << it
-      when 2 # node
-        props = el[2]
-        props.sort_by { |prop| prop[0] }.each do |prop|
-          if prop[0] >= property_keys.length
-            @metadata.invalidate
-            property_keys = @metadata.property_keys
-          end
-          agg << "#{it}.#{property_keys[prop[0]]}"
-        end
-      when 3 # relation
-        props = el[4]
-        props.sort_by { |prop| prop[0] }.each do |prop|
-          if prop[0] >= property_keys.length
-            @metadata.invalidate
-            property_keys = @metadata.property_keys
-          end
-          agg << "#{it}.#{property_keys[prop[0]]}"
-        end
-      end
-
-      agg
+    prop_index = prop[0]
+    if prop_index > property_keys.length
+      @metadata.invalidate
+      property_keys = @metadata.property_keys
     end
+    { property_keys[prop_index] => prop[2] }
   end
 
   # Read metrics about internal query handling

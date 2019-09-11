@@ -5,11 +5,13 @@ require_relative '../lib/redisgraph.rb'
 # based on queries extracted from
 describe RedisGraph do
   before(:all) do
-    @r = RedisGraph.new("#{described_class}_test")
-    create_graph
-  rescue Redis::BaseError => e
-    $stderr.puts(e)
-    exit 1
+    begin
+      @r = RedisGraph.new("#{described_class}_test")
+      create_graph
+    rescue Redis::BaseError => e
+      $stderr.puts(e)
+      exit 1
+    end
   end
 
   after(:all) do

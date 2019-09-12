@@ -9,9 +9,7 @@
 `redisgraph-rb` is a Ruby gem client for the [RedisGraph](https://github.com/RedisLabsModules/RedisGraph) module. It relies on `redis-rb` for Redis connection management and provides support for graph QUERY, EXPLAIN, and DELETE commands.
 
 ## RedisGraph compatibility
-`redisgraph-rb` is currently compatible with RedisGraph versions >= 1.99 (module version: 19900)
-
-The result set structure introduced by RedisGraph 2.0 requires some modifications to this client. If you are interested in using this client with the latest RedisGraph, please inform us by commenting on [the corresponding issue](https://github.com/RedisGraph/redisgraph-rb/issues/1)!
+The current version of `redisgraph-rb` is compatible with RedisGraph versions >= 1.99 (module version: 19900).
 
 ### Previous Version
 For RedisGraph versions >= 1.0 and < 2.0 (ie module version: 10202), instead use and refer to

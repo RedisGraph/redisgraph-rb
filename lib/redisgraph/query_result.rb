@@ -68,6 +68,8 @@ class QueryResult
 
   def map_scalar(type, val)
     map_func = case type
+               when 1 # null
+                 return nil
                when 2 # string
                  :to_s
                when 3 # integer
@@ -77,6 +79,10 @@ class QueryResult
                  return val == "true"
                when 5 # double
                  :to_f
+               # TODO: when in the distro packages and docker images,
+               #   the following _should_ work
+               # when 6 # array
+               #   val.map { |it| map_scalar(it[0], it[1]) }
                end
     val.send(map_func)
   end

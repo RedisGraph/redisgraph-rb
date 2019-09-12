@@ -35,6 +35,14 @@ describe RedisGraph do
 
   # Test functions - each validates one or more EXPLAIN and QUERY calls
 
+  context "bare return" do
+    it "should map values properly" do
+      q = """UNWIND [1, 1.5, null, 'strval', true, false] AS a RETURN a"""
+      res = @r.query(q)
+      expect(res.resultset).to eq([[1], [1.5], [nil], ["strval"], [true], [false]])
+    end
+  end
+
   context "nodes" do
     it "should delete nodes properly" do
       q = """MATCH (t:node) WHERE t.name = 'src' DELETE t"""

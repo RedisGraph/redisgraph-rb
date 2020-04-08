@@ -83,6 +83,12 @@ class QueryResult
                #   the following _should_ work
                # when 6 # array
                #   val.map { |it| map_scalar(it[0], it[1]) }
+               when 7 # relation
+                 props = val[4]
+                 return props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
+               when 8 # node
+                 props = val[2]
+                 return props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
                end
     val.send(map_func)
   end

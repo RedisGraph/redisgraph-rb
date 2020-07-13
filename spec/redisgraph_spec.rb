@@ -76,4 +76,20 @@ describe RedisGraph do
       expect(res.resultset).to eq([["src1", [{"name"=>"dest1"}, {"color"=>"magenta"}], [{"weight"=>7.8}]]])
     end
   end
+
+  context "update" do
+    it "should support adding new properties" do
+      q = """MATCH (a {name: 'src1'}) SET a.newval = true"""
+      plan = @r.explain(q)
+      expect(plan.detect { |row| row.include?("Update") }).to_not be_nil
+      res = @r.query(q)
+      expect(res.stats[:properties_set]).to eq(1)
+    end
+
+    it "should print property strings correctly after updates" do
+      q = """MATCH (a {name: 'src1'}) RETURN a"""
+      res = @r.query(q)
+      expect(res.resultset).to eq([[[{"name"=>"src1"}, {"color"=>"cyan"}, {"newval"=>TRUE}]]])
+    end
+  end
 end

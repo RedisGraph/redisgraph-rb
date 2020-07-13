@@ -23,7 +23,7 @@ class RedisGraph
     end
 
     def invalidate
-      @labels = @property_key = @relationship_types
+      @labels = @property_keys = @relationship_types = nil
     end
 
     def labels
@@ -57,7 +57,7 @@ class RedisGraph
 
   # Execute a command and return its parsed result
   def query(command)
-    resp = @connection.call("GRAPH.QUERY", @graphname, command, '--compact')
+    resp = @connection.call('GRAPH.QUERY', @graphname, command, '--compact')
     QueryResult.new(resp,
                     metadata:   @metadata)
   rescue Redis::CommandError => e
@@ -66,14 +66,14 @@ class RedisGraph
 
   # Return the execution plan for a given command
   def explain(command)
-    @connection.call("GRAPH.EXPLAIN", @graphname, command)
+    @connection.call('GRAPH.EXPLAIN', @graphname, command)
   rescue Redis::CommandError => e
     raise ExplainError, e
   end
 
   # Delete the graph and all associated keys
   def delete
-    @connection.call("GRAPH.DELETE", @graphname)
+    @connection.call('GRAPH.DELETE', @graphname)
   rescue Redis::CommandError => e
     raise DeleteError, e
   end

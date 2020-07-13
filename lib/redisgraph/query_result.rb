@@ -1,3 +1,19 @@
+# frozen_string_literal: true
+
+# Data types that can be returned in result sets
+module ValueType
+  UNKNOWN = 0
+  NULL = 1
+  STRING = 2
+  INTEGER = 3
+  BOOLEAN = 4
+  DOUBLE = 5
+  ARRAY = 6
+  EDGE = 7
+  NODE = 8
+  PATH = 9 # TODO: not yet implemented
+end
+
 class QueryResult
   attr_accessor :columns
   attr_accessor :resultset
@@ -21,6 +37,8 @@ class QueryResult
   end
 
   def print_resultset
+    return unless columns
+
     pretty = Terminal::Table.new headings: columns do |t|
       resultset.each { |record| t << record }
     end
@@ -32,7 +50,6 @@ class QueryResult
     return unless response.length > 1
 
     # Any non-empty result set will have multiple rows (arrays)
-
 
     # First row is header describing the returned records, corresponding
     # precisely in order and naming to the RETURN clause of the query.
@@ -47,19 +64,7 @@ class QueryResult
       header.reduce([]) do |agg, (type, _it)|
         i += 1
         el = row[i]
-
-        case type
-        when 1 # scalar
-          agg << map_scalar(el[0], el[1])
-        when 2 # node
-          props = el[2]
-          agg << props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
-        when 3 # relation
-          props = el[4]
-          agg << props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
-        end
-
-        agg
+        agg << map_scalar(el[0], el[1])
       end
     end
 
@@ -68,25 +73,23 @@ class QueryResult
 
   def map_scalar(type, val)
     map_func = case type
-               when 1 # null
+               when ValueType::NULL
                  return nil
-               when 2 # string
+               when ValueType::STRING
                  :to_s
-               when 3 # integer
+               when ValueType::INTEGER
                  :to_i
-               when 4 # boolean
+               when ValueType::BOOLEAN
                  # no :to_b
-                 return val == "true"
-               when 5 # double
+                 return val == 'true'
+               when ValueType::DOUBLE
                  :to_f
-               # TODO: when in the distro packages and docker images,
-               #   the following _should_ work
-               # when 6 # array
-               #   val.map { |it| map_scalar(it[0], it[1]) }
-               when 7 # relation
+               when ValueType::ARRAY
+                 return val.map { |it| map_scalar(it[0], it[1]) }
+               when ValueType::EDGE
                  props = val[4]
                  return props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
-               when 8 # node
+               when ValueType::NODE
                  props = val[2]
                  return props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
                end
@@ -98,7 +101,7 @@ class QueryResult
 
     property_keys = @metadata.property_keys
     prop_index = prop[0]
-    if prop_index > property_keys.length
+    if prop_index >= property_keys.length
       @metadata.invalidate
       property_keys = @metadata.property_keys
     end

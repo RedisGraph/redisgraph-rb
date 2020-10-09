@@ -64,7 +64,16 @@ class QueryResult
       header.reduce([]) do |agg, (type, _it)|
         i += 1
         el = row[i]
-        agg << map_scalar(el[0], el[1])
+        case type
+        when 1 # Column of scalars
+          agg << map_scalar(el[0], el[1])
+        when 2 # node
+          props = el[2]
+          agg << props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
+        when 3 # Column of relations
+          props = el[4]
+          agg << props.sort_by { |prop| prop[0] }.map { |prop| map_prop(prop) }
+        end
       end
     end
 

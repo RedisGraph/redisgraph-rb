@@ -5,7 +5,7 @@
 
 # redisgraph-rb
 [![Forum](https://img.shields.io/badge/Forum-RedisGraph-blue)](https://forum.redislabs.com/c/modules/redisgraph)
-[![Gitter](https://badges.gitter.im/RedisLabs/RedisGraph.svg)](https://gitter.im/RedisLabs/RedisGraph?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/gWBRT6P)
 
 `redisgraph-rb` is a Ruby gem client for the [RedisGraph](https://github.com/RedisLabsModules/RedisGraph) module. It relies on `redis-rb` for Redis connection management and provides support for graph QUERY, EXPLAIN, and DELETE commands.
 

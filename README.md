@@ -2,6 +2,7 @@
 [![CircleCI](https://circleci.com/gh/RedisGraph/redisgraph-rb/tree/master.svg?style=svg)](https://circleci.com/gh/RedisGraph/redisgraph-rb/tree/master)
 [![GitHub issues](https://img.shields.io/github/release/RedisGraph/redisgraph-rb.svg)](https://github.com/RedisGraph/redisgraph-rb/releases/latest)
 [![Codecov](https://codecov.io/gh/RedisGraph/redisgraph-rb/branch/master/graph/badge.svg)](https://codecov.io/gh/RedisGraph/redisgraph-rb)
+[![Gem Version](https://badge.fury.io/rb/redisgraph.svg)](https://badge.fury.io/rb/redisgraph)
 
 # redisgraph-rb
 [![Forum](https://img.shields.io/badge/Forum-RedisGraph-blue)](https://forum.redislabs.com/c/modules/redisgraph)

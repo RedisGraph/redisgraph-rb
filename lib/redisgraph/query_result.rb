@@ -39,10 +39,25 @@ class QueryResult
   def print_resultset
     return unless columns
 
-    pretty = Terminal::Table.new headings: columns do |t|
-      resultset.each { |record| t << record }
+    # Compute max length of each column
+    column_sizes = resultset.reduce([]) do |lengths, row|
+      row.each_with_index.map{|iterand, index| [lengths[index] || 0, iterand.to_s.length].max}
     end
-    puts pretty
+
+    # Print column headers
+    puts head = '-' * (column_sizes.inject(&:+) + (3 * column_sizes.count) + 1)
+    row = columns.fill(nil, columns.size..(column_sizes.size - 1))
+    row = row.each_with_index.map{|v, i| v = v.to_s + ' ' * (column_sizes[i] - v.to_s.length)}
+    puts '| ' + row.join(' | ') + ' |'
+    puts head
+
+    # Print result set rows
+    resultset.each do |row|
+      row = row.fill(nil, row.size..(column_sizes.size - 1))
+      row = row.each_with_index.map{|v, i| v = v.to_s + ' ' * (column_sizes[i] - v.to_s.length)}
+      puts '| ' + row.join(' | ') + ' |'
+    end
+    puts head
   end
 
   def parse_resultset(response)

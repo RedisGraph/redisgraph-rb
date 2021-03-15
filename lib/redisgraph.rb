@@ -1,5 +1,4 @@
 require 'redis'
-require 'terminal-table'
 
 require_relative 'redisgraph/errors.rb'
 require_relative 'redisgraph/query_result.rb'

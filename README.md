@@ -45,11 +45,11 @@ cmd = """MATCH ()-[:works]->(e:employer) RETURN e"""
 response = r.query(cmd)
 
 response.print_resultset
-+----------------+
-| e.name         |
-+----------------+
-| Dunder Mifflin |
-+----------------+
+--------------------------------
+| e                            |
+--------------------------------
+| [{"name"=>"Dunder Mifflin"}] |
+--------------------------------
 
 r.delete
  => "Graph removed, internal execution time: 0.416024 milliseconds"

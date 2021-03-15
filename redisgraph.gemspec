@@ -20,5 +20,4 @@ Gem::Specification.new do |s|
   s.files = `git ls-files`.split("\n")
 
   s.add_runtime_dependency('redis', '~> 4')
-  s.add_runtime_dependency('terminal-table', '~> 1', '>= 1.8')
 end

@@ -89,7 +89,7 @@ describe RedisGraph do
     it "should print property strings correctly after updates" do
       q = """MATCH (a {name: 'src1'}) RETURN a"""
       res = @r.query(q)
-      expect(res.resultset).to eq([[[{"name"=>"src1"}, {"color"=>"cyan"}, {"newval"=>TRUE}]]])
+      expect(res.resultset).to eq([[[{"name"=>"src1"}, {"color"=>"cyan"}, {"newval"=>true}]]])
     end
   end
 end

@@ -69,7 +69,7 @@ To ensure prerequisites are installed, run the following:
 These tests expect a Redis server with the Graph module loaded to be available at localhost:6379
 
 The currently compatible version of the RedisGraph module may be run as follows:
-`docker run -p 6379:6379 -it --rm redislabs/redisgraph:2.0-edge`
+`docker run -p 6379:6379 -it --rm redis/redis-stack:latest`
 
 A simple test suite is provided, and can be run with:
 `rspec`
